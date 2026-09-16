@@ -102,8 +102,7 @@ SentinelQA/
 │       ├── pages/                      # Launcher console, Comparative Dashboard
 │       └── App.tsx
 ├── backend/                            # FastAPI Backend (Python 3.12 + pip)
-│   ├── pyproject.toml                  # Project dependencies and packaging
-│   ├── requirements.txt                # Standard pip dependencies
+│   ├── requirements.txt                # Standard pip dependencies (FastAPI, LangChain, etc.)
 │   ├── Dockerfile                      # Container definition for backend runtime
 │   ├── src/
 │   │   ├── main.py                     # Entry point for local/dev runner

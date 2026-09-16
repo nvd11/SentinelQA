@@ -175,7 +175,7 @@ auto-test-agent/
 │       ├── pages/                      # Launcher page, Dashboard page
 │       └── App.tsx
 ├── backend/                            # FastAPI Backend (Following python-template-v2)
-│   ├── pyproject.toml                  # Backend dependencies (FastAPI, loguru, pydantic-settings, etc.)
+│   ├── requirements.txt                # Standard pip dependencies (Python 3.12 + pip)
 │   ├── Dockerfile
 │   ├── src/
 │   │   ├── __init__.py
