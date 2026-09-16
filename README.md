@@ -29,11 +29,9 @@ Given a **GitHub Repository URL** and an optional **Jira Issue ID / Requirement 
 +---------------------------------------------------------------------------------------------------+
 |                                       AutoTestAgent Flow                                          |
 |                                                                                                   |
-|  [GitHub Repo URL]                                                                                |
-|          +                                                                                        |
-|  [Jira ID / Spec]                                                                                 |
-|          |                                                                                        |
-|          v                                                                                        |
+|  [User via React Web UI]                                                                          |
+|          │ (Repo URL + optional Jira ID)                                                          |
+|          ▼                                                                                        |
 |  +--------------------+       +------------------------------------+       +-------------------+  |
 |  | Context Ingestion  | ----> | Dual-Dimension Semantic Coverage   | ----> | Major Gap         |  |
 |  | (Code AST + ACs)   |       | (Business Matrix + IT Edge Cases)  |       | Identification    |  |
@@ -42,8 +40,10 @@ Given a **GitHub Repository URL** and an optional **Jira Issue ID / Requirement 
 |                                                                                      v            |
 |  +--------------------+       +------------------------------------+       +-------------------+  |
 |  | Comparative        | <---- | Execution Sandbox Validation       | <---- | Autonomous Test   |  |
-|  | Dashboard & PR     |       | (mvn/pytest compile & test loop)   |       | Generation (Branch|  |
+|  | React Dashboard    |       | (mvn test compile & test loop)     |       | Generation (Branch|  |
 |  +--------------------+       +------------------------------------+       +-------------------+  |
+|          ▲                                                                                        |
+|          └──────────────── SSE Streaming (Real-time Agent Progress) ─────────────────────────────┘  |
 +---------------------------------------------------------------------------------------------------+
 ```
 

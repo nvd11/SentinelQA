@@ -94,27 +94,27 @@ Traditional software QA relies heavily on superficial metrics like line coverage
 +----------------------------------------------------------------------------------------------------+
 |                                      System Architecture                                           |
 |                                                                                                    |
-|  [User / CLI / Web UI]                                                                             |
-|         │                                                                                          |
+|  [React Web UI (Browser)]                                                                          |
+|         │ (POST /api/v1/scan)                                                                      |
 |         ▼                                                                                          |
 |  ┌──────────────────────────────────────────────────────────────────────────────────────────────┐  |
-|  │                                      Orchestration Engine                                    │  |
+|  │                        FastAPI Backend & Orchestration Engine                                │  |
 |  │                                                                                              │  |
 |  │  ┌───────────────────────┐   ┌───────────────────────────────┐   ┌────────────────────────┐  │  |
 |  │  │  1. Repo & Doc Parser │   │ 2. Dual-Dimension Evaluator   │   │ 3. Self-Healing Engine  │  │  |
 |  │  │  - Git Ingest         │   │ - Business AC Extraction      │   │ - Branch checkout      │  │  |
 |  │  │  - AST / File Mapper  │   │ - Semantic Coverage Mapper    │   │ - Test code synthesizer│  │  |
-|  │  │  - Jira Connector     │   │ - Robustness Scorer (0-100)   │   │ - Sandbox CLI runner   │  │  |
+|  │  │  - Jira Connector     │   │ - Robustness Scorer (0-100)   │   │ - Maven Sandbox Runner │  │  |
 |  │  └───────────────────────┘   └───────────────────────────────┘   │ - Reflection loop      │  │  |
 |  │                                                                  └────────────────────────┘  │  |
 |  └──────────────────────────────────────────────────────────────────────────────────────────────┘  |
 |         │                                                                                          |
-|         ▼                                                                                          |
+|         ▼ (SSE Real-time Stream & JSON Report API)                                                 |
 |  ┌──────────────────────────────────────────────────────────────────────────────────────────────┐  |
-|  │                                  Reporting & Visualizer Engine                               │  |
-|  │  - Base Branch Health Report                                                                 │  |
-|  │  - Enhanced Branch Health Report                                                             │  |
-|  │  - Interactive Side-by-Side Comparison Dashboard (Single-file HTML / React Web App)          │  |
+|  │                               React Executive Dashboard UI                                   │  |
+|  │  - Base Branch Health & Radar Analysis                                                       │  |
+|  │  - Enhanced Branch Score Delta (+X Points)                                                   │  |
+|  │  - Interactive Side-by-Side Comparison (Blindspots Eliminated, Generated Tests, PR Link)     │  |
 |  └──────────────────────────────────────────────────────────────────────────────────────────────┘  |
 +----------------------------------------------------------------------------------------------------+
 ```
