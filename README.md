@@ -25,27 +25,36 @@ In enterprise software engineering (especially within high-stakes domains like F
 
 Given a **GitHub Repository URL**, an optional **Jira Issue ID / Requirement Doc**, and an optional **Department Coding Standard GitHub Repository**, AutoTestAgent executes an end-to-end autonomous QA workflow:
 
-```
-+---------------------------------------------------------------------------------------------------+
-|                                       AutoTestAgent Flow                                          |
-|                                                                                                   |
-  [User via React Web UI]                                                                          |
-          │ (Target Repo URL + optional Jira ID + optional Coding Standard Repo URL)               |
-          ▼                                                                                        |
-  +--------------------+       +------------------------------------+       +-------------------+  |
-  | Context Ingestion  | ----> | Multi-Dimension Semantic Coverage  | ----> | Major Gap         |  |
-  | (Code AST, ACs,    |       | (Business ACs + IT Edge Cases +    |       | Identification    |  |
-  |  Coding Standards) |       |  Department Coding Standards)      |       |                   |  |
-  +--------------------+       +------------------------------------+       +-------------------+  |
-|                                                                                      |            |
-|                                                                                      v            |
-|  +--------------------+       +------------------------------------+       +-------------------+  |
-|  | Comparative        | <---- | Execution Sandbox Validation       | <---- | Autonomous Test   |  |
-|  | React Dashboard    |       | (mvn test compile & test loop)     |       | Generation (Branch|  |
-|  +--------------------+       +------------------------------------+       +-------------------+  |
-|          ▲                                                                                        |
-|          └──────────────── SSE Streaming (Real-time Agent Progress) ─────────────────────────────┘  |
-+---------------------------------------------------------------------------------------------------+
+```mermaid
+flowchart TD
+    subgraph Input["Context Ingestion"]
+        UI["User (React Web Dashboard)"] -->|Target Repo URL| Ingest["Context Ingestor"]
+        Jira["Optional: Jira Issue / ACs"] --> Ingest
+        StdRepo["Optional: Department Coding Standard Repo"] --> Ingest
+    end
+
+    subgraph Assessment["Multi-Dimension Semantic Coverage Analysis"]
+        Ingest --> CodeAST["Code AST & Test Structure"]
+        Ingest --> ACParse["Business Requirements Extraction"]
+        Ingest --> StdParse["Coding Standards & Rule Extraction"]
+        CodeAST & ACParse & StdParse --> EvalEngine["Semantic Evaluation Engine (LangChain Agent)"]
+        EvalEngine --> Gaps["Major Blindspot Identification<br/>• Business AC Gaps<br/>• IT Resilience Deficiencies<br/>• Coding Standard Violations"]
+    end
+
+    subgraph Remediation["Autonomous Generation & Self-Healing Sandbox"]
+        Gaps --> Branching["Git Checkout Enhancement Branch"]
+        Branching --> Synth["Test Synthesis (JUnit 5 + Mockito)"]
+        Synth --> Sandbox["Maven Execution Sandbox (mvn test)"]
+        Sandbox -->|Compilation/Assertion Failure| Reflection["Self-Healing Reflection Loop<br/>(Inspect Trace, Fix Imports & Mocks)"]
+        Reflection --> Synth
+        Sandbox -->|Green Build Verified| CommitPush["Git Commit & Push Enhancement Branch"]
+    end
+
+    subgraph Analytics["Comparative Analytics & Delivery"]
+        CommitPush --> Dash["Comparative Robustness Dashboard<br/>• Pre vs Post Robustness Radar Chart<br/>• Eliminated Blindspots Checklist<br/>• One-Click Pull Request Creation"]
+        EvalEngine -.->|SSE Real-time Events| UI
+        Sandbox -.->|SSE Streaming Logs| UI
+    end
 ```
 
 ### 1. Multi-Dimension Semantic Coverage (Business, IT & Coding Standards)
