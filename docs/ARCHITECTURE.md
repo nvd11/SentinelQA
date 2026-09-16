@@ -214,7 +214,7 @@ auto-test-agent/
 │   └── test/                           # Pytest suite for backend
 ├── testbeds/                           # Demonstrative Java Sandboxes
 │   └── spring-banking-demo/            # Target Spring Boot service with deliberate blindspots
-└── docker-compose.yml                  # Full-stack composition (Web + Backend)
+└── cloudbuild.yaml                     # GCP Cloud Build pipeline for deploying to Cloud Run
 ```
 
 ---
