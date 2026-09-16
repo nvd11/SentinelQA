@@ -164,33 +164,57 @@ auto-test-agent/
 ├── docs/
 │   ├── REQUIREMENTS.md                 # System Requirements Specification (SRS)
 │   └── ARCHITECTURE.md                 # Full-Stack System Architecture Document
-├── server/                             # FastAPI Backend Service
-│   ├── app.py                          # FastAPI application & SSE routers
-│   ├── api/                            # API route controllers
-│   └── services/                       # Task runner & background job coordinator
-├── web/                                # React Frontend Web App
+├── web/                                # React Frontend Web App (Vite + TypeScript)
 │   ├── package.json
 │   ├── vite.config.ts
+│   └── src/
+│       ├── components/                 # Radar chart, diff table, stream console
+│       ├── pages/                      # Launcher page, Dashboard page
+│       └── App.tsx
+├── backend/                            # FastAPI Backend (Following python-template-v2)
+│   ├── pyproject.toml                  # Backend dependencies (FastAPI, loguru, pydantic-settings, etc.)
+│   ├── Dockerfile
 │   ├── src/
-│   │   ├── components/                 # Radar chart, diff table, stream console
-│   │   ├── pages/                      # Launcher page, Dashboard page
-│   │   └── App.tsx
-├── sentinel_qa/                        # Agent Core Logic (Python)
-│   ├── core/
-│   │   ├── git_manager.py              # Git clone, branch, commit, push
-│   │   ├── jira_parser.py              # Jira API connector & fallback doc parser
-│   │   ├── java_ast.py                 # AST extraction via tree-sitter
-│   │   ├── evaluator.py                # Dual-dimension scoring engine
-│   │   ├── test_generator.py           # JUnit 5 test synthesizer
-│   │   ├── sandbox_runner.py           # Subprocess wrapper for `mvn test`
-│   │   └── self_healer.py              # Reflection & error correction loop
-│   └── models/
-│       ├── schema.py                   # Pydantic schemas (ACs, Scores, Diff)
-│       └── prompts.py                  # Structured prompts with JSON guards
+│   │   ├── __init__.py
+│   │   ├── main.py                     # Entry point for local/dev runner
+│   │   ├── server.py                   # FastAPI app factory, CORS, lifespan
+│   │   ├── configs/                    # Multi-environment configuration system
+│   │   │   ├── __init__.py
+│   │   │   ├── config.py               # Pydantic Settings, YAML loader, APP_ENVIRONMENT
+│   │   │   ├── config_local.yaml       # Local dev config (proxy, debug logs)
+│   │   │   ├── config_dev.yaml         # Dev environment config
+│   │   │   ├── config_prod.yaml        # Prod environment config
+│   │   │   ├── log_config.py           # Loguru config (GCP JSON in prod, color in dev)
+│   │   │   └── proxy.py                # Local proxy helpers
+│   │   ├── models/                     # Request/Response schemas & domain entities
+│   │   │   ├── __init__.py
+│   │   │   ├── requests.py             # ScanRequest (repo_url, branch, jira_id)
+│   │   │   ├── responses.py            # ScanResponse, StreamEvent, ReportResponse
+│   │   │   └── domain.py               # AcceptanceCriteria, RobustnessScore, DiffMatrix
+│   │   ├── routers/                    # FastAPI route controllers
+│   │   │   ├── __init__.py
+│   │   │   ├── health.py               # Health check endpoint (/health)
+│   │   │   ├── scan.py                 # Scan triggers & SSE streaming (/api/v1/scan, /api/v1/stream)
+│   │   │   └── report.py               # Comparative report endpoints (/api/v1/report)
+│   │   ├── services/                   # Business & orchestrator services
+│   │   │   ├── __init__.py
+│   │   │   └── scan_service.py         # Async task coordinator & SSE event emitter
+│   │   ├── engine/                     # Agent core engines & sandbox executors
+│   │   │   ├── __init__.py
+│   │   │   ├── git_client.py           # Git operations (clone, branch, commit, push)
+│   │   │   ├── jira_client.py          # Jira API & fallback doc extractor
+│   │   │   ├── java_ast_parser.py      # tree-sitter Java AST parser
+│   │   │   ├── semantic_evaluator.py   # Dual-dimension scoring engine
+│   │   │   ├── test_synthesizer.py     # JUnit 5 + Mockito generator
+│   │   │   └── maven_sandbox.py        # Subprocess `mvn test` execution & reflection loop
+│   │   └── utils/                      # Shared helpers
+│   │       ├── __init__.py
+│   │       ├── path_utils.py           # Project & workspace directory helpers
+│   │       └── validators.py           # Git URL & Jira ID sanitizers
+│   └── test/                           # Pytest suite for backend
 ├── testbeds/                           # Demonstrative Java Sandboxes
-│   └── spring-banking-demo/            # Target Spring Boot service with blindspots
-├── pyproject.toml                      # Backend dependencies
-└── docker-compose.yml                  # One-click startup for Demo
+│   └── spring-banking-demo/            # Target Spring Boot service with deliberate blindspots
+└── docker-compose.yml                  # Full-stack composition (Web + Backend)
 ```
 
 ---
