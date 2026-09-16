@@ -85,14 +85,74 @@ When critical test coverage gaps are identified:
 
 ---
 
-## 🏗️ 3. Architecture & Functional Specification
+## 📂 3. Repository Directory Structure & Module Descriptions
 
-Detailed architectural specifications, data models, and prompt workflows are maintained in:
-- [System Requirements Specification (SRS)](docs/REQUIREMENTS.md)
+```text
+SentinelQA/
+├── README.md                           # Project overview, architecture flowchart & setup
+├── .env-template                       # Environment variables template & provider keys
+├── docs/
+│   ├── REQUIREMENTS.md                 # System Requirements Specification (SRS)
+│   └── ARCHITECTURE.md                 # Full-Stack System Architecture & Sequence Flows
+├── web/                                # React Frontend Web App (Vite + TypeScript)
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── src/
+│       ├── components/                 # Radar chart, diff table, SSE stream console
+│       ├── pages/                      # Launcher console, Comparative Dashboard
+│       └── App.tsx
+├── backend/                            # FastAPI Backend (Python 3.12 + pip)
+│   ├── pyproject.toml                  # Project dependencies and packaging
+│   ├── requirements.txt                # Standard pip dependencies
+│   ├── Dockerfile                      # Container definition for backend runtime
+│   ├── src/
+│   │   ├── main.py                     # Entry point for local/dev runner
+│   │   ├── server.py                   # FastAPI app factory, CORS, lifespan & middleware
+│   │   ├── configs/                    # Multi-environment config loader (local/dev/prod)
+│   │   ├── models/                     # Pydantic v2 domain schemas (ScanRequest, RobustnessScore)
+│   │   ├── routers/                    # REST & SSE endpoints (/health, /api/v1/scan, /stream, /report)
+│   │   ├── services/                   # Background task coordinator & event streaming service
+│   │   ├── llm/                        # LLM provider clients, LangChain ChatModel & prompt templates
+│   │   │   ├── client.py               # LiteLLM / Gemini / OpenAI client wrapper & fallbacks
+│   │   │   └── prompts.py              # Prompts for evaluation, test generation & self-healing
+│   │   ├── agent/                      # Core LangChain Agent workflows & state machines
+│   │   │   ├── orchestrator.py         # Autonomous workflow controller
+│   │   │   ├── evaluator.py            # Multi-dimension semantic coverage evaluator
+│   │   │   ├── synthesizer.py          # JUnit 5 & Mockito test suite generator
+│   │   │   └── self_healer.py          # Build failure reflection & test repair loop
+│   │   ├── engine/                     # Execution tools, parsers & sandbox runners
+│   │   │   ├── git_client.py           # Git operations (clone, branch, commit, push)
+│   │   │   ├── jira_client.py          # Jira API & fallback acceptance criteria extractor
+│   │   │   ├── coding_standard_client.py # Department Coding Standard repo fetcher & rule indexer
+│   │   │   ├── java_ast_parser.py      # tree-sitter Java AST & annotation parser
+│   │   │   └── maven_sandbox.py        # Subprocess `mvn test` execution runner & log extractor
+│   │   └── utils/                      # Shared helpers (paths, sanitizers, logging)
+│   └── test/                           # Pytest test suite for backend services
+├── testbeds/                           # Demonstrative Java Sandboxes
+│   └── spring-banking-demo/            # Spring Boot sample service with deliberate blindspots
+└── cloudbuild.yaml                     # CI/CD deployment pipeline
+```
+
+### Module Descriptions
+
+- **`web/` (Presentation Layer)**: High-performance React 18 SPA built with Vite and Tailwind CSS. Features an interactive scan launcher (supporting target repo, branch, Jira issue, and optional department coding standard repo), real-time SSE execution logs, and an executive-ready before-and-after robustness diff dashboard with 5-axis radar charts.
+- **`backend/src/routers/` & `services/` (API Gateway & Ingestion)**: FastAPI asynchronous controllers managing scan dispatching, streaming Server-Sent Events (SSE), and serving comparative analytics payloads.
+- **`backend/src/llm/` (Model Adaptation Layer)**: Houses LangChain ChatModel integrations (supporting LiteLLM, Gemini, and OpenAI gateways) and versioned prompt templates for business AC extraction, coding standard verification, test generation, and failure reflection.
+- **`backend/src/agent/` (Agentic Core)**: The cognitive engine driving SentinelQA. Includes the orchestrator, multi-dimensional semantic coverage evaluator (business ACs, resilience, department coding standards, assertion depth), JUnit 5 test synthesizer, and the 3-iteration self-healing reflection engine.
+- **`backend/src/engine/` (Sandbox & Developer Tools)**: Execution and parsing utilities including `tree-sitter-java` AST analysis, Git workflow automation, Jira client, Department Coding Standard indexer, and isolated Maven execution runner.
+- **`testbeds/` (Validation Sandboxes)**: Realistic enterprise microservices (e.g., Spring Boot banking and transfer services) embedded with intentional edge-case bugs, concurrency blindspots, and missing tests for live end-to-end benchmarking.
 
 ---
 
-## 👥 4. Team & Hackathon Information
+## 🏗️ 4. Architecture & Functional Specification
+
+Detailed architectural specifications, data models, and prompt workflows are maintained in:
+- [System Requirements Specification (SRS)](docs/REQUIREMENTS.md)
+- [System Architecture Document](docs/ARCHITECTURE.md)
+
+---
+
+## 👥 5. Team & Hackathon Information
 
 - **Team**: Hackathon 2026 Team
 - **Repository**: [https://github.com/nvd11/SentinelQA](https://github.com/nvd11/SentinelQA)
