@@ -32,11 +32,12 @@ Traditional software QA relies heavily on superficial metrics like line coverage
 ## 3. Functional Requirements (FR)
 
 ### FR-1: Repository & Requirement Ingestion
-- **FR-1.1**: The Agent MUST accept a public/private GitHub repository URL and target branch.
+- **FR-1.1**: The Agent MUST accept a public/private GitHub repository URL and target branch for the target codebase.
 - **FR-1.2**: The Agent MUST accept an optional Jira Issue ID (or Jira API endpoint/token) or fallback to local repository documentation (`README.md`, `docs/`, `spec.md`, OpenAPI/Swagger definitions).
-- **FR-1.3**: The Agent MUST parse repository structure, identifying primary programming language (Java / Spring Boot or Python / FastAPI), build tool (`pom.xml`, `build.gradle`, `pyproject.toml`), and existing test suites (`src/test/...`, `tests/...`).
+- **FR-1.3**: The Agent MUST accept an optional Department Coding Standard GitHub repository URL (and optional branch/path) containing organizational engineering guidelines, test conventions, and quality standards (e.g., markdown rulebooks, checkstyle/sonarqube guidelines, architectural principles).
+- **FR-1.4**: The Agent MUST parse repository structure, identifying primary programming language (Java / Spring Boot or Python / FastAPI), build tool (`pom.xml`, `build.gradle`, `pyproject.toml`), and existing test suites (`src/test/...`, `tests/...`).
 
-### FR-2: Dual-Dimension Semantic Coverage Analysis
+### FR-2: Multi-Dimension Semantic Coverage Analysis
 - **FR-2.1 Business Requirement Traceability**:
   - Extract Acceptance Criteria (ACs) and business domain rules from requirements.
   - Correlate each AC with existing test cases using semantic vector/LLM reasoning.
@@ -48,6 +49,10 @@ Traditional software QA relies heavily on superficial metrics like line coverage
     - Transactional rollback on exception (e.g., `@Transactional` failure paths).
     - Idempotency & concurrent modification.
   - Flag critical gaps: `[CRITICAL_BLINDSPOT] TransferService: Concurrent debit without row-level lock check`.
+- **FR-2.3 Department Coding Standard Compliance**:
+  - Ingest and index rules from the optional Coding Standard repository (e.g., test structure conventions like Given-When-Then, naming conventions, mandatory assertion libraries like AssertJ over bare JUnit assertions, mocking constraints).
+  - Cross-check existing tests and identify violations or missed standards: `[STANDARD_VIOLATION] Missing @DisplayName or Given-When-Then structure`.
+  - Inject active standards into test synthesis prompts so generated suites comply 100% with departmental guidelines.
 
 ### FR-3: Autonomous Test Generation & Verification Sandbox
 - **FR-3.1 Branch Management**:
@@ -67,11 +72,12 @@ Traditional software QA relies heavily on superficial metrics like line coverage
 ### FR-4: Dual Branch Robustness Dashboards & Comparative Analytics
 - **FR-4.1 Robustness Scoring Model (RSM)**:
   - Aggregate coverage into an objective score from 0 to 100:
-    - **Business AC Coverage (Weight: 40%)**: Ratio of verified ACs to total extracted ACs.
+    - **Business AC Coverage (Weight: 35%)**: Ratio of verified ACs to total extracted ACs.
     - **Edge & Resilience Defense (Weight: 35%)**: Proportion of boundary/exception handling paths tested.
-    - **Assertion Quality & Mutation Depth (Weight: 25%)**: Ratio of meaningful assertions vs. trivial status checks.
+    - **Department Coding Standard Compliance (Weight: 15%)**: Alignment with departmental test conventions and guidelines (defaults to 100% compliant if no standard repo provided).
+    - **Assertion Quality & Mutation Depth (Weight: 15%)**: Ratio of meaningful assertions vs. trivial status checks.
 - **FR-4.2 Single-Branch Dashboard**:
-  - Display Overall Robustness Score, category radar chart, and itemized AC/IT audit table.
+  - Display Overall Robustness Score, category radar chart, itemized AC/IT audit table, and coding standard compliance breakdown.
 - **FR-4.3 Comparative Diff Dashboard**:
   - Side-by-side view: **Original Branch (Before) vs. Agent Branch (After)**.
   - Metric deltas: Score increase, newly secured business rules, eliminated risk vectors.
@@ -83,8 +89,9 @@ Traditional software QA relies heavily on superficial metrics like line coverage
 
 - **NFR-1 (Aesthetic & Polish)**: Dashboards must use a modern dark/light executive UI (Tailwind CSS, Glassmorphism, smooth radar/bar animations) suitable for live hackathon presentations.
 - **NFR-2 (Determinism & Safety)**: The Agent will NEVER alter production business code; all changes are strictly isolated to `src/test/` on a new feature branch.
-- **NFR-3 (Execution Speed)**: Analysis and test generation for a medium-sized service (5-10 service classes) must complete within 3-5 minutes.
-- **NFR-4 (Extensibility)**: Modular architecture allowing additional LLM backends (OpenAI, Gemini, Anthropic) and build systems.
+- **NFR-3 (Execution Speed & Runtime Environment)**: Analysis and test generation for a medium-sized service (5-10 service classes) must complete within 3-5 minutes. The Agent backend runtime MUST standardize on Python 3.12 managed with standard `pip` (`requirements.txt`) and LangChain framework.
+- **NFR-4 (Configuration & Environment Management)**: All sensitive keys, LLM providers, and environment endpoints MUST be templated via `.env-template` and validated at startup using Pydantic Settings.
+- **NFR-5 (Extensibility)**: Modular architecture allowing additional LLM backends (OpenAI, Gemini, Anthropic, LiteLLM) and build systems.
 
 ---
 
@@ -98,16 +105,16 @@ Traditional software QA relies heavily on superficial metrics like line coverage
 |         │ (POST /api/v1/scan)                                                                      |
 |         ▼                                                                                          |
 |  ┌──────────────────────────────────────────────────────────────────────────────────────────────┐  |
-|  │                        FastAPI Backend & Orchestration Engine                                │  |
-|  │                                                                                              │  |
-|  │  ┌───────────────────────┐   ┌───────────────────────────────┐   ┌────────────────────────┐  │  |
-|  │  │  1. Repo & Doc Parser │   │ 2. Dual-Dimension Evaluator   │   │ 3. Self-Healing Engine  │  │  |
-|  │  │  - Git Ingest         │   │ - Business AC Extraction      │   │ - Branch checkout      │  │  |
-|  │  │  - AST / File Mapper  │   │ - Semantic Coverage Mapper    │   │ - Test code synthesizer│  │  |
-|  │  │  - Jira Connector     │   │ - Robustness Scorer (0-100)   │   │ - Maven Sandbox Runner │  │  |
-|  │  └───────────────────────┘   └───────────────────────────────┘   │ - Reflection loop      │  │  |
-|  │                                                                  └────────────────────────┘  │  |
-|  └──────────────────────────────────────────────────────────────────────────────────────────────┘  |
+│                        FastAPI Backend & Orchestration Engine                                │  |
+│                                                                                              │  |
+│  ┌───────────────────────┐   ┌───────────────────────────────┐   ┌────────────────────────┐  │  |
+│  │  1. Repo & Doc Parser │   │ 2. Multi-Dimension Evaluator  │   │ 3. Self-Healing Engine  │  │  |
+│  │  - Target Git Ingest  │   │ - Business AC Extraction      │   │ - Branch checkout      │  │  |
+│  │  - Standard Repo Ingest   │ - Coding Standard Indexing    │   │ - Test code synthesizer│  │  |
+│  │  - AST / File Mapper  │   │ - Semantic Coverage Mapper    │   │ - Maven Sandbox Runner │  │  |
+│  │  - Jira Connector     │   │ - Robustness Scorer (0-100)   │   │ - Reflection loop      │  │  |
+│  │  └────────────────────┘   └───────────────────────────────┘   └────────────────────────┘  │  |
+│  └──────────────────────────────────────────────────────────────────────────────────────────┘  |
 |         │                                                                                          |
 |         ▼ (SSE Real-time Stream & JSON Report API)                                                 |
 |  ┌──────────────────────────────────────────────────────────────────────────────────────────────┐  |

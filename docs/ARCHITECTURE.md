@@ -2,7 +2,7 @@
 **Project Name:** AutoTestAgent (SentinelQA)  
 **Target Event:** Hackathon 2026  
 **Architecture Style:** Decoupled Client-Server (React Frontend + FastAPI Backend)  
-**Implementation Language:** Python 3.11+ (FastAPI & Agent Core) + TypeScript / React (Web Dashboard)  
+Implementation Language: Python 3.12 (FastAPI & LangChain Agent Core, pip-managed) + TypeScript / React (Web Dashboard)
 **Target Testbeds:** Java 17/21 + Spring Boot (Maven / JUnit 5)  
 **Document Version:** 1.1.0  
 **Status:** Approved / In-Development  
@@ -15,11 +15,12 @@ AutoTestAgent adopts a **Decoupled Full-Stack Web Architecture** (`React Fronten
 
 ### Core Tenets:
 1. **Decoupled Client-Server Model**:
-   - **Frontend (React + Tailwind CSS + Lucide Icons + Recharts)**: Handles user input (GitHub Repo URL, Jira ID), renders real-time streaming agent thoughts/progress, and presents side-by-side comparative dashboards.
-   - **Backend (FastAPI + Async Python 3.11)**: Orchestrates Git operations, AST parsing, LLM prompt pipelines, Maven CLI sandbox execution, and SSE (Server-Sent Events) streaming.
+   - **Frontend (React + Tailwind CSS + Lucide Icons + Recharts)**: Handles user input (Target GitHub Repo URL, optional Jira ID, and optional Coding Standard Repo URL), renders real-time streaming agent thoughts/progress, and presents side-by-side comparative dashboards.
+   - Backend (FastAPI + Async Python 3.12, pip, LangChain Agent): Orchestrates Git operations for both target codebase and coding standards, AST parsing, LLM prompt pipelines, Maven CLI sandbox execution, and SSE (Server-Sent Events) streaming.
+- Configuration Management: Standardized via `.env-template` supporting multi-environment setup (local, dev, prod).
 2. **Zero Production Mutation**: The agent strictly operates within `src/test/java/...` on an isolated Git branch (`agent/test-enhancement-*`).
 3. **Deterministic Execution Sandbox**: All generated JUnit tests must achieve `BUILD SUCCESS` under `mvn test` before committing.
-4. **Dual-Lens Quality Metrics**: Evaluates both Business Acceptance Criteria (AC traceability) and Technical Robustness (concurrency, null-checks, rollbacks).
+4. **Multi-Lens Quality Metrics**: Evaluates Business Acceptance Criteria (AC traceability), Technical Robustness (concurrency, null-checks, rollbacks), and Department Coding Standard Compliance.
 
 ---
 
@@ -28,9 +29,9 @@ AutoTestAgent adopts a **Decoupled Full-Stack Web Architecture** (`React Fronten
 ```mermaid
 flowchart TB
     subgraph Frontend["1. Frontend Layer (React + Vite + Tailwind)"]
-        UI_Input["Repo & Jira Input Console\n(URL, Branch, Jira ID)"]
+        UI_Input["Repo & Context Input Console\n(Target Repo URL, Branch, Jira ID, Coding Standard Repo)"]
         UI_Stream["Real-time Agent Thought Stream\n(SSE / WebSocket Listener)"]
-        UI_Dashboard["Dual-Branch Comparative Dashboard\n(Radar Chart, Diff View, Score Deltas)"]
+        UI_Dashboard["Multi-Branch Comparative Dashboard\n(Radar Chart, Diff View, Score Deltas)"]
     end
 
     subgraph APILayer["2. API & Orchestration Layer (FastAPI Backend)"]
@@ -42,9 +43,10 @@ flowchart TB
     subgraph AgentCore["3. Agent Core Modules (Python)"]
         Git_Mgr["Git Manager\n(Clone, Branch, Commit, PR)"]
         Doc_Parser["Jira / Spec Ingestor\n(AC & Rule Extraction)"]
+        Std_Parser["Coding Standard Ingestor\n(Rulebook & Convention Parser)"]
         AST_Parser["Java AST Parser\n(tree-sitter-java)"]
-        Evaluator["Dual-Dimension Evaluator\n(Business AC vs IT Edge-Cases)"]
-        Healer["Self-Healing Test Synthesizer\n(JUnit 5 + Mockito)"]
+        Evaluator["Multi-Dimension Evaluator\n(Business AC, IT Edge-Cases, Coding Standards)"]
+        Healer["Self-Healing Test Synthesizer\n(JUnit 5 + Mockito, Standards-Compliant)"]
     end
 
     subgraph Sandbox["4. Execution Sandbox (Local JVM / Docker)"]
@@ -58,8 +60,8 @@ flowchart TB
     Task_Orchestrator -->|Progress Events| SSE_Broadcaster
     SSE_Broadcaster -->|Live Stream| UI_Stream
 
-    Task_Orchestrator --> Git_Mgr & Doc_Parser & AST_Parser
-    Doc_Parser & AST_Parser --> Evaluator
+    Task_Orchestrator --> Git_Mgr & Doc_Parser & Std_Parser & AST_Parser
+    Doc_Parser & Std_Parser & AST_Parser --> Evaluator
     Evaluator -->|Baseline Score| Task_Orchestrator
     
     Task_Orchestrator --> Healer
@@ -97,15 +99,15 @@ sequenceDiagram
     participant MVN as Maven Sandbox
     participant GH as Remote GitHub Repo
 
-    User->>UI: Enter Repo URL & Jira ID -> Click "Start Analysis"
+    User->>UI: Enter Repo URL, Jira ID & Coding Standard Repo -> Click "Start Analysis"
     UI->>API: POST /api/v1/scan
     API-->>UI: Subscribe to SSE stream (/api/v1/stream/{job_id})
     
-    Agent->>GH: Clone Repo & Checkout Base Branch
-    Agent->>UI: SSE: "Extracting Java AST & Jira Acceptance Criteria..."
+    Agent->>GH: Clone Target Repo & Optional Coding Standard Repo
+    Agent->>UI: SSE: "Extracting Java AST, Jira Acceptance Criteria & Department Coding Standards..."
     
-    Agent->>Agent: Run Dual-Dimension Evaluation (Baseline Score: 58)
-    Agent->>UI: SSE: "Baseline evaluated. Score: 58/100. 3 Critical Blindspots detected."
+    Agent->>Agent: Run Multi-Dimension Evaluation (Baseline Score: 58)
+    Agent->>UI: SSE: "Baseline evaluated. Score: 58/100. 3 Critical Blindspots & 2 Standard Violations detected."
 
     Agent->>GH: Checkout new branch `agent/test-enhancement-*`
     Agent->>UI: SSE: "Synthesizing JUnit 5 tests for AccountTransferService..."
@@ -133,26 +135,27 @@ sequenceDiagram
 ### 4.1 Frontend Architecture (`web/`)
 - **Technology Stack**: React 18, Vite, TypeScript, Tailwind CSS, Recharts (for radar and score trend charts), Lucide-React icons.
 - **Views**:
-  1. **Workbench / Launcher**: Clean, dark-themed hero console with GitHub URL, branch selection, and optional Jira ticket input.
-  2. **Agent Live Console**: Terminal-style animated thought stream showing live tool invocations and self-healing iterations.
+  1. **Workbench / Launcher**: Clean, dark-themed hero console with Target GitHub URL, branch selection, optional Jira ticket input, and optional Department Coding Standard GitHub URL.
+  2. **Agent Live Console**: Terminal-style animated thought stream showing live tool invocations, standard rulebook ingestion, and self-healing iterations.
   3. **Comparative Dashboard**:
      - Score Delta banner (e.g., `58 -> 89 (+31)`).
-     - 5-Axis Radar Chart (Business ACs, Concurrency/Locking, Boundary/Null, Upstream Circuit, Assertion Depth).
-     - Itemized Acceptance Criteria Traceability Checklist.
+     - 5-Axis Radar Chart (Business ACs, Concurrency/Locking, Boundary/Null, Coding Standard Compliance, Assertion Depth).
+     - Itemized Acceptance Criteria Traceability Checklist & Coding Standard Audit.
      - Side-by-side Test Coverage Diff and Verified Execution Log.
 
 ### 4.2 Backend API Architecture (`server/` & `sentinel_qa/`)
-- **Technology Stack**: FastAPI, Uvicorn, Pydantic v2, LiteLLM / Google GenAI SDK.
+- **Technology Stack**: FastAPI, Uvicorn, Pydantic v2, LiteLLM / Google GenAI SDK, LangChain.
 - **Key Endpoints**:
-  - `POST /api/v1/scan`: Accepts `{ repo_url: str, branch: str, jira_id: Optional[str] }`, initializes asynchronous background task, returns `job_id`.
-  - `GET /api/v1/stream/{job_id}`: Server-Sent Events (SSE) streaming progress milestones and agent logs.
+  - `POST /api/v1/scan`: Accepts `{ repo_url: str, branch: str, jira_id: Optional[str], standard_repo_url: Optional[str] }`, initializes asynchronous background task, returns `job_id`.
+  - `GET /api/v1/stream/{job_id}`: Server-Sent Events (SSE) streaming progress milestones, standard ingestion, and agent logs.
   - `GET /api/v1/report/{job_id}`: Returns complete comparative report JSON for dashboard rendering.
 
 ### 4.3 Agent Core & Self-Healing Engine
 - **AST Parsing (`core/java_ast.py`)**: Uses `tree-sitter-java` to extract classes, methods, annotations (`@Transactional`, `@Valid`), and existing test methods.
-- **Evaluation Engine (`core/evaluator.py`)**: Implements the 3-pillar scoring model:
-  $$\text{Score} = (0.40 \times S_{\text{Business}}) + (0.35 \times S_{\text{Resilience}}) + (0.25 \times S_{\text{Assertion}})$$
-- **Self-Healing Loop (`core/self_healer.py`)**: Subprocess runner executing `mvn test`. Captures stack traces, triggers LLM reflection (max 3 tries), and ensures 100% green builds before commit.
+- **Coding Standard Ingestor (`engine/coding_standard_client.py`)**: Clones and indexes department-level coding guidelines (e.g., test naming patterns, required assertion libraries like AssertJ, structure guidelines, exception handling patterns).
+- **Evaluation Engine (`core/evaluator.py`)**: Implements the 4-pillar scoring model:
+  $$\text{Score} = (0.35 \times S_{\text{Business}}) + (0.35 \times S_{\text{Resilience}}) + (0.15 \times S_{\text{Standards}}) + (0.15 \times S_{\text{Assertion}})$$
+- **Self-Healing Loop (`core/self_healer.py`)**: Subprocess runner executing `mvn test`. Captures stack traces, triggers LLM reflection (max 3 tries), and ensures 100% green builds adhering to department guidelines before commit.
 
 ---
 
@@ -188,9 +191,9 @@ auto-test-agent/
 │   │   │   └── proxy.py                # Local proxy helpers
 │   │   ├── models/                     # Request/Response schemas & domain entities
 │   │   │   ├── __init__.py
-│   │   │   ├── requests.py             # ScanRequest (repo_url, branch, jira_id)
+│   │   │   ├── requests.py             # ScanRequest (repo_url, branch, jira_id, standard_repo_url)
 │   │   │   ├── responses.py            # ScanResponse, StreamEvent, ReportResponse
-│   │   │   └── domain.py               # AcceptanceCriteria, RobustnessScore, DiffMatrix
+│   │   │   └── domain.py               # AcceptanceCriteria, CodingStandardRule, RobustnessScore, DiffMatrix
 │   │   ├── routers/                    # FastAPI route controllers
 │   │   │   ├── __init__.py
 │   │   │   ├── health.py               # Health check endpoint (/health)
@@ -199,13 +202,22 @@ auto-test-agent/
 │   │   ├── services/                   # Business & orchestrator services
 │   │   │   ├── __init__.py
 │   │   │   └── scan_service.py         # Async task coordinator & SSE event emitter
-│   │   ├── engine/                     # Agent core engines & sandbox executors
+│   │   ├── llm/                        # LLM provider clients, prompt templates & token handling
+│   │   │   ├── __init__.py
+│   │   │   ├── client.py               # LiteLLM / Gemini client wrapper & fallback handling
+│   │   │   └── prompts.py              # Prompt templates for evaluation, synthesis & reflection
+│   │   ├── agent/                      # Core agent workflows, state machines & self-healing
+│   │   │   ├── __init__.py
+│   │   │   ├── orchestrator.py         # Autonomous workflow controller
+│   │   │   ├── evaluator.py            # Dual-dimension semantic evaluator
+│   │   │   ├── synthesizer.py          # JUnit 5 & Mockito test generator
+│   │   │   └── self_healer.py          # Test runner & feedback reflection loop
+│   │   ├── engine/                     # Toolings, parsers & sandbox execution runners
 │   │   │   ├── __init__.py
 │   │   │   ├── git_client.py           # Git operations (clone, branch, commit, push)
 │   │   │   ├── jira_client.py          # Jira API & fallback doc extractor
+│   │   │   ├── coding_standard_client.py # Department Coding Standard repository fetcher & indexer
 │   │   │   ├── java_ast_parser.py      # tree-sitter Java AST parser
-│   │   │   ├── semantic_evaluator.py   # Dual-dimension scoring engine
-│   │   │   ├── test_synthesizer.py     # JUnit 5 + Mockito generator
 │   │   │   └── maven_sandbox.py        # Subprocess `mvn test` execution & reflection loop
 │   │   └── utils/                      # Shared helpers
 │   │       ├── __init__.py
@@ -225,8 +237,8 @@ auto-test-agent/
 | :--- | :--- | :--- |
 | **Frontend Framework** | React 18 + Vite (TypeScript) | High performance, rapid component assembly, and rich charting ecosystem. |
 | **Styling & Icons** | Tailwind CSS + Lucide Icons | Modern, sleek dark-mode aesthetic suitable for executive presentations. |
-| **Backend API** | FastAPI (Python 3.11+) | Native async support, auto-generated OpenAPI docs, and lightweight SSE streaming. |
-| **Agent Logic** | Python 3.11+ + Pydantic v2 | Unmatched speed of iteration, AST extraction, and strict JSON validation. |
+| **Backend API** | FastAPI (Python 3.12, pip) | Native async support, auto-generated OpenAPI docs, and lightweight SSE streaming. |
+| **Agent Logic** | Python 3.12 + Pydantic v2 | Unmatched speed of iteration, AST extraction, and strict JSON validation. Managed via pip. |
 | **Java AST Extraction** | `tree-sitter` (`tree-sitter-java`) | High-speed C-native syntax tree parsing without JVM dependency. |
 | **Target Testbed** | Java 17/21 + Spring Boot + Maven | Standard enterprise financial technology stack. |
 | **Real-time Protocol** | Server-Sent Events (SSE) | Lightweight, unidirectional live event streaming for agent progress. |

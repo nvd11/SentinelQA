@@ -23,19 +23,20 @@ In enterprise software engineering (especially within high-stakes domains like F
 
 ## 🎯 2. Core Capabilities & Value Proposition
 
-Given a **GitHub Repository URL** and an optional **Jira Issue ID / Requirement Doc**, AutoTestAgent executes an end-to-end autonomous QA workflow:
+Given a **GitHub Repository URL**, an optional **Jira Issue ID / Requirement Doc**, and an optional **Department Coding Standard GitHub Repository**, AutoTestAgent executes an end-to-end autonomous QA workflow:
 
 ```
 +---------------------------------------------------------------------------------------------------+
 |                                       AutoTestAgent Flow                                          |
 |                                                                                                   |
-|  [User via React Web UI]                                                                          |
-|          │ (Repo URL + optional Jira ID)                                                          |
-|          ▼                                                                                        |
-|  +--------------------+       +------------------------------------+       +-------------------+  |
-|  | Context Ingestion  | ----> | Dual-Dimension Semantic Coverage   | ----> | Major Gap         |  |
-|  | (Code AST + ACs)   |       | (Business Matrix + IT Edge Cases)  |       | Identification    |  |
-|  +--------------------+       +------------------------------------+       +-------------------+  |
+  [User via React Web UI]                                                                          |
+          │ (Target Repo URL + optional Jira ID + optional Coding Standard Repo URL)               |
+          ▼                                                                                        |
+  +--------------------+       +------------------------------------+       +-------------------+  |
+  | Context Ingestion  | ----> | Multi-Dimension Semantic Coverage  | ----> | Major Gap         |  |
+  | (Code AST, ACs,    |       | (Business ACs + IT Edge Cases +    |       | Identification    |  |
+  |  Coding Standards) |       |  Department Coding Standards)      |       |                   |  |
+  +--------------------+       +------------------------------------+       +-------------------+  |
 |                                                                                      |            |
 |                                                                                      v            |
 |  +--------------------+       +------------------------------------+       +-------------------+  |
@@ -47,11 +48,12 @@ Given a **GitHub Repository URL** and an optional **Jira Issue ID / Requirement 
 +---------------------------------------------------------------------------------------------------+
 ```
 
-### 1. Dual-Dimension Semantic Coverage (IT & Business)
-Instead of cold line percentages, AutoTestAgent evaluates code across two human-readable dimensions:
+### 1. Multi-Dimension Semantic Coverage (Business, IT & Coding Standards)
+Instead of cold line percentages, AutoTestAgent evaluates code across comprehensive human-readable dimensions:
 - **Business Dimension (Acceptance Criteria Traceability)**: Parses requirements from Jira or repository specs, extracts business assertions, and maps them to existing test scenarios item-by-item.
 - **IT & Robustness Dimension**: Identifies critical boundary and resilience gaps (e.g., `Null/Empty Payloads`, `Timeout & Retry Scenarios`, `Transaction Rollback under Concurrent Failures`, `Idempotency Violations`).
-- **High-Readability Output**: Renders itemized checklists with clear statuses (e.g., `[COVERED]`, `[PARTIAL]`, `[CRITICAL_BLINDSPOT]`).
+- **Department Coding Standard Compliance**: Ingests an optional dedicated GitHub repository documenting team/departmental coding standards (e.g., architectural conventions, naming rules, test structure guidelines, security constraints, and mandatory assertions) to ensure generated tests strictly align with organizational best practices.
+- **High-Readability Output**: Renders itemized checklists with clear statuses (e.g., `[COVERED]`, `[PARTIAL]`, `[NON_COMPLIANT]`, `[CRITICAL_BLINDSPOT]`).
 
 ### 2. Autonomous Remediation & Self-Healing Execution Loop
 When critical test coverage gaps are identified:
@@ -62,9 +64,10 @@ When critical test coverage gaps are identified:
 
 ### 3. Dual Robustness Dashboards & Comparative Analytics
 - **Single-Branch Robustness View**: Calculates an explainable **Robustness Score (0-100)** with clear criteria weightings:
-  - Business AC Alignment (40%)
+  - Business AC Alignment (35%)
   - Resilience & Edge Defenses (35%)
-  - Assertion Efficacy (25%)
+  - Coding Standard Compliance (15%)
+  - Assertion Efficacy (15%)
 - **Side-by-Side Comparative View**: Generates a visually striking Diff Dashboard comparing the `Original Branch` vs. the `Enhanced Branch`:
   - Score Delta (e.g., `61 -> 89 (+28)`)
   - Blindspots eliminated (visual radar chart and checklist)
@@ -83,8 +86,10 @@ Detailed architectural specifications, data models, and prompt workflows are mai
 ## 👥 4. Team & Hackathon Information
 
 - **Team**: Hackathon 2026 Team
-- **Repository**: [https://github.com/nvd11/auto-test-agent](https://github.com/nvd11/auto-test-agent)
+- **Repository**: [https://github.com/nvd11/SentinelQA](https://github.com/nvd11/SentinelQA)
 - **Primary Focus**: Autonomous SDLC Agents, DevSecOps, Enterprise Quality Assurance
+- **Tech Stack**: Python 3.12 (pip), LangChain Agent, FastAPI, React 18, JUnit 5 Testbeds
+- **Configuration**: Refer to `.env-template` for system credentials and environment variables.
 
 ---
 
